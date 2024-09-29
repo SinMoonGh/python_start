@@ -4,7 +4,7 @@ MENU = {
             "water": 50,
             "coffee": 18,
         },
-        "cost": 1.5,
+        "cost": 3000,
     },
     "latte": {
         "ingredients": {
@@ -12,7 +12,7 @@ MENU = {
             "milk": 150,
             "coffee": 24,
         },
-        "cost": 2.5,
+        "cost": 4500,
     },
     "cappuccino": {
         "ingredients": {
@@ -20,7 +20,7 @@ MENU = {
             "milk": 100,
             "coffee": 24,
         },
-        "cost": 3.0,
+        "cost": 3500,
     }
 }
 
@@ -55,58 +55,72 @@ def check_resources(menu, resources, order):
         return False
 
 
-def process_coins(quarters, dimes, nickles, pennies):
-  """지불한 금액의 총합을 반환합니다."""
+def process_coins(menu, order):
+  """사용자의 동전을 입력받고, 고객이 지불한 금액이 충분한지 확인
+  및 영수증을 출력합니다."""
   # TODO 3: process coins.
-  # 동전: quarters = $0.25, dimes = $0.10, nickles = $0.05, pennies = $0.01
-  # 총합 = quarters + dimes + nickles + pennies 이다.
-  coin_sum = (quarters * 0.25) + (dimes * 0.10) + (nickles * 0.05) + (pennies *
-                                                                      0.01)
-  return coin_sum
+  
+  print("지폐를 넣어주세요.")
+  coin_sum = 0
+  There_is_not_enough = False
 
-
-def check_coins(coin_sum, menu, order):
-  """사용자가 음료 가격보다 많은 돈을 지불했는지 검사하고, 맞다면 잔돈을 반환"""
-  # TODO 4: check transaction successful?
-  # 사용자가 음료의 금액에 맞는 돈을 넣었는지 검사해야 한다.
-
+  # 만약 주문한 커피 금액이 지불한 금액보다 적다면 process_coins함수를 반환합니다.
+  ten_thousand_won = int(input("10000짜리 지폐 : "))
+  coin_sum += ten_thousand_won * 10000
+  if coin_sum > menu[order]['cost']:    
+    return receipt(coin_sum, menu, order)
+  
+  Five_thousand_won = int(input("5000원짜리 지폐 : "))
+  coin_sum += Five_thousand_won * 5000
+  if coin_sum > menu[order]['cost']:    
+    return receipt(coin_sum, menu, order)
+  
+  A_thousand_won = int(input("1000원짜리 지폐 : "))
+  coin_sum += A_thousand_won * 1000
   if coin_sum > menu[order]['cost']:
-    # 음료의 금액보다 사용자가 지불한 금액이 크다면 잔돈을 반환해줘야 합니다.
-    # “Here is $2.45 dollars in change.” 여기서 실수는 소숫점 2자리 까지 반환합니다.
-    print(f"Here is ${coin_sum - menu[order]['cost']: .1f} in change")
-    return True
+    return receipt(coin_sum, menu, order)
   else:
-    # 만약 사용자가 금액보다 부족한 돈을 넣었다면 “Sorry that's not enough money. Money refunded.”를 출력한다.
-    print("Sorry that's not enough money. Money refunded.")
-    return False
+    There_is_not_enough = True
+  
+  return There_is_not_enough    
 
 
-def resource_update(coin_sum, menu, order):
+def receipt(coin_sum, menu, order):
+  """커피값, 지불 금액, 거스름 돈 출력"""
+
+  # 커피값 출력
+  print(f"음료값 : {menu[order]['cost']}")
+
+  # 지불 금액 출력
+  print(f"지불하신 금액 : {coin_sum}")
+
+  # 거스름 돈 출력
+  change = coin_sum - menu[order]['cost']
+  print(f"반환받으실 금액 : {change}")  
+  
+
+def resource_update(menu, order):
   """사용자가 금액보다 넘치는 돈을 넣었다면 음료 재고와 매출을 업데이트 합니다."""
   # TODO 5: Make Coffee.
   # 커피를 주문하고 난 후 'report'를 사용했을 때 전체 재고 물량이 차감되어 있어야 합니다.
   # 주문을 성공적으로 수행했고, 여전히 재고가 남았다면 다시 주문을 받습니다.
-  if check_coins(coin_sum, menu, order):
-    # 사용자가 충분한 금액을 지불했다면
-    for ingredients, amount in menu[order]['ingredients'].items():
-      # 음료를 만드는 데 필요한 물품과 수량을 할당
-      if ingredients in resources:
-        # 주문한 음료 재료가 재고 품목에 있다면
-        if resources[ingredients] >= amount:
-          # 그리고 재고 수량이 음료를 만드는 데 필요한 수량보다 많다면
-          resources[ingredients] -= amount
-          # 재고를 탐색하여 음료를 만드는 데 필요한 재료의 양 만큼 차감시킨다.
+  
+  for ingredients, amount in menu[order]['ingredients'].items():
+    # 음료를 만드는 데 필요한 물품과 수량을 할당
+    if ingredients in resources:
+      # 주문한 음료 재료가 재고 품목에 있다면
+      if resources[ingredients] >= amount:
+        # 그리고 재고 수량이 음료를 만드는 데 필요한 수량보다 많다면
+        resources[ingredients] -= amount
+        # 재고를 탐색하여 음료를 만드는 데 필요한 재료의 양 만큼 차감시킨다.
 
 
-def cafe_program():
+def cafe_program():  
   money = 0
   while True:
     # TODO: Prompt user by asking “What would you like? (espresso/latte/cappuccino):”
-    # 고객에게 뭐 먹을 건지 받기
-    # 마지막에 주문이 성공했는지 여부 나옴
-    # 그리고 주문이 성공했으면 뭐 주문했는지 출력.
-    # 이 루트를 무한 반복
-    order = input(" What would you like? (espresso/latte/cappuccino): ")
+    # 고객에게 주문을 입력 받고, off를 입력하면 종료합니다.    
+    order = input("주문하시겠습니까? (espresso/latte/cappuccino): ")
     if exit(order):
       break
 
@@ -118,23 +132,19 @@ def cafe_program():
       )
     else:
       # 만약 사용자가 선택한 음료의 재료가 충분하다면 음료를 주문 받아야한다.
-      if check_resources(MENU, resources, order):
-        # 그 다음 사용자의 동전을 입력 받아야 한다.
-        print("Please insert coins.")
-        quarters = int(input("how many quarters?: "))
-        dimes = int(input("how many dimes?: "))
-        nickles = int(input("how many nickles?: "))
-        pennies = int(input("how many pennies?: "))
-        # 고객이 지불한 금액의 총합
-        money = process_coins(quarters, dimes, nickles, pennies)
-        # 고객이 지불한 금액이 음료 값보다 많은 지 검사
-        check_coins(money, MENU, order)
+      if check_resources(MENU, resources, order):       
+        # 사용자의 지폐을 입력받고, 고객이 지불한 금액이 충분한지 체크
+        There_is_not_enough = process_coins(MENU, order)
 
-        # 재고에 있는 수량을 차감
-        resource_update(money, MENU, order)
+        if There_is_not_enough:
+          # 만약 지불 금액이 충분하지 않다면
+          print("죄송합니다. 금액이 충분하지 않습니다. 넣으신 돈을 다시 반환해 드리겠습니다.")
+        else:
+          # 재고에 있는 수량을 차감
+          resource_update(MENU, order)
 
-        # 현재 재고로 상품(라떼)을 만들 수 있는 경우 “Here is your latte. Enjoy!”를 출력해야 합니다.
-        print(f'Here is your {order}. Enjoy!')
+          # '맛있게 드세요' 출력.
+          print(f'주문하신 {order} 나왔습니다~ 맛있게 드세요~')          
 
 
 cafe_program()
